@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlkimiaTech | Neurotechnology for Epilepsy</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a0a2a 0%, #2a1040 100%);
+        color: #ffffff;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      header {
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .alkimia-logo {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        display: inline-block;
+      }
+
+      .logo-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #2a1040;
+        border-radius: 50%;
+        z-index: 0;
+      }
+
+      .blue-ring {
+        position: absolute;
+        width: 86px;
+        height: 86px;
+        top: 7px;
+        left: 7px;
+        border: 1.5px solid rgba(0, 180, 230, 0.6);
+        border-radius: 50%;
+        z-index: 1;
+      }
+
+      /* Símbolos reposicionados */
+      .circuit-symbol {
+        position: absolute;
+        color: rgba(0, 180, 230, 0.9);
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 2;
+        text-shadow: 0 0 3px cyan;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+      }
+      /* ⊥ - bajado más */
+      .sym-perp {
+        top: 50px;
+        right: 10px;
+      }
+      /* ⋉ - más hacia abajo */
+      .sym-flow {
+        bottom: 22px;
+        left: 10px;
+      }
+
+      /* Crisol */
+      .crucible-main {
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: 38px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 26px solid transparent;
+        border-right: 26px solid transparent;
+        border-top: 42px solid #e09e3a;
+        filter: drop-shadow(0 0 3px #ffaa55);
+        z-index: 3;
+      }
+      .crucible-soft {
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: 44px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-top: 32px solid #f5bc60;
+        opacity: 0.6;
+        z-index: 3;
+      }
+
+      .trinity-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 5;
+      }
+      .trinity-dots span {
+        display: block;
+        background: radial-gradient(circle, #e0e0e0, #a0a0a0);
+        border-radius: 50%;
+        width: 6px;
+        height: 6px;
+        box-shadow: 0 0 4px silver;
+        animation: pulseDot 1.5s infinite;
+      }
+      .trinity-dots span:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .trinity-dots span:nth-child(2) {
+        width: 9px;
+        height: 9px;
+        animation-delay: 0.5s;
+      }
+      .trinity-dots span:nth-child(3) {
+        animation-delay: 1s;
+      }
+      @keyframes pulseDot {
+        0% {
+          opacity: 0.4;
+          transform: scale(0.8);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1.2);
+          box-shadow: 0 0 6px silver;
+        }
+      }
+
+      /* ADN */
+      .dna-container {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 75px;
+        z-index: 4;
+      }
+      .dna-line {
+        position: absolute;
+        width: 1.5px;
+        height: 100%;
+        left: 13px;
+        background: linear-gradient(to bottom, #ff6b6b, #ff3b6b, #ff6b6b);
+      }
+      /* Puntos rojos más grandes y titilantes - separados del crisol */
+      .dna-point {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: radial-gradient(circle, #ffcccc, #ff2222);
+        border-radius: 50%;
+        animation: pulseRed 1.8s infinite;
+        box-shadow: 0 0 4px #ff0000;
+      }
+      @keyframes pulseRed {
+        0% {
+          opacity: 0.5;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1.1);
+          box-shadow: 0 0 6px #ff6b6b;
+        }
+      }
+      /* Puntos izquierda (hélice) */
+      .dna-point.online:nth-child(2) {
+        top: 28px;
+        left: 10px;
+      }
+      .dna-point.online:nth-child(3) {
+        top: 10px;
+        left: 10px;
+      }
+      .dna-point.online:nth-child(4) {
+        top: -4px;
+        left: 10px;
+      }
+      /* Puntos derecha */
+      .dna-point.right:nth-child(5) {
+        top: 46px;
+        left: 19px;
+      }
+      .dna-point.right:nth-child(6) {
+        top: 30px;
+        left: 19px;
+      }
+      .dna-point.right:nth-child(7) {
+        top: 14px;
+        left: 19px;
+      }
+
+      @keyframes twinkle {
+        0% {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1);
+          box-shadow: 0 0 4px gold;
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+      }
+
+      .logo-text h1 {
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, #ffcc88, #ffaa55, #ff8866);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .logo-text p {
+        font-size: 0.75rem;
+        color: #ddbbff;
+        font-style: italic;
+      }
+
+      /* Resto de la página */
+      .hero {
+        padding: 80px 0;
+        text-align: center;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #ffcc88, #ffaa55);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero p {
+        font-size: 1rem;
+        max-width: 700px;
+        margin: 0 auto 30px;
+        color: #ccc;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 25px;
+        background: linear-gradient(135deg, #ff6b6b, #ff3b3b);
+        color: white;
+        text-decoration: none;
+        border-radius: 30px;
+        font-weight: bold;
+        transition: transform 0.3s;
+      }
+      .btn:hover {
+        transform: scale(1.05);
+      }
+      .section {
+        padding: 50px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        text-align: center;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+      }
+      .contact-form {
+        max-width: 500px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 25px;
+        border-radius: 15px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+      }
+      button {
+        background: linear-gradient(135deg, #ff6b6b, #ff3b3b);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 30px;
+        cursor: pointer;
+      }
+      footer {
+        text-align: center;
+        padding: 25px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.75rem;
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <div class="alkimia-logo">
+            <div class="logo-bg"></div>
+            <div class="blue-ring"></div>
+
+            <!-- Símbolos (solo ⊥ y ⋉, se eliminó └┐) -->
+            <div class="circuit-symbol sym-perp">⊥</div>
+            <div class="circuit-symbol sym-flow">⋉</div>
+
+            <div class="crucible-main"></div>
+            <div class="crucible-soft"></div>
+
+            <div class="trinity-dots">
+              <span></span><span></span><span></span>
+            </div>
+
+            <div class="dna-container">
+              <div class="dna-line"></div>
+              <div class="dna-point online"></div>
+              <div class="dna-point online"></div>
+              <div class="dna-point online"></div>
+              <div class="dna-point right"></div>
+              <div class="dna-point right"></div>
+              <div class="dna-point right"></div>
+            </div>
+          </div>
+          <div class="logo-text">
+            <h1>ALKIMIATECH</h1>
+            <p>where science meets care</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="hero">
+        <h1>AI-Powered Epilepsy Prediction</h1>
+        <p>
+          AlkimiaTech is a neurotechnology startup developing intellectual
+          property (AI algorithms, mobile apps) for epileptic seizure
+          prediction. Our business model focuses on licensing our technology to
+          pharmaceutical companies and wearable manufacturers.
+        </p>
+        <a href="#contact" class="btn">Partner with us</a>
+      </section>
+
+      <section class="section">
+        <h2>Our Technology</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>🧠 AI Algorithms</h3>
+            <p>
+              Proprietary machine learning models that analyze heart rate,
+              oxygen levels, and movement to predict seizure risk in real-time.
+            </p>
+          </div>
+          <div class="card">
+            <h3>📱 Mobile Platform</h3>
+            <p>
+              Cross-platform app (iOS/Android) that connects to wearables and
+              provides alerts, medical records, and data visualization.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🆘 Autonomous Rescue</h3>
+            <p>
+              Low-power beacon mode for locating patients during emergencies,
+              even without cellular coverage or GPS signal.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>About AlkimiaTech</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>🧠 Mission</h3>
+            <p>
+              To empower epilepsy patients with predictive AI and wearable
+              technology, reducing uncertainty and saving lives.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🔬 Vision</h3>
+            <p>
+              From epilepsy to a global neurotechnology platform, scalable to
+              Parkinson, Alzheimer, cardiology and diabetes.
+            </p>
+          </div>
+          <div class="card">
+            <h3>⚖️ Business Model</h3>
+            <p>
+              Technology licensing to pharma and wearable manufacturers. We
+              develop the IP; they certify, produce and distribute.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Our Business Model – Licensing</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>🧠 Intellectual Property</h3>
+            <p>
+              AlkimiaTech develops AI algorithms, mobile platforms and seizure
+              logging systems. We own the software IP.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🏭 Partners</h3>
+            <p>
+              Pharmaceutical companies and wearable manufacturers integrate our
+              technology into their devices.
+            </p>
+          </div>
+          <div class="card">
+            <h3>✅ Certification & Distribution</h3>
+            <p>
+              Partners handle CE/FDA certifications, mass production and
+              hospital distribution.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="section">
+        <h2>Contact Us</h2>
+        <div class="contact-form">
+          <form action="#" method="post">
+            <input type="text" placeholder="Your Name" required />
+            <input type="email" placeholder="Your Email" required />
+            <input type="text" placeholder="Company" />
+            <textarea
+              rows="4"
+              placeholder="Tell us about your interest in AlkimiaTech"
+            ></textarea>
+            <button type="submit">Send Message</button>
+          </form>
+        </div>
+      </section>
+
+      <footer>
+        <p>AlkimiaTech – Neurotechnology for a safer tomorrow.</p>
+        <p>© 2026 AlkimiaTech. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <script>
+      const logoContainer = document.querySelector(".alkimia-logo");
+      for (let i = 0; i < 35; i++) {
+        const star = document.createElement("div");
+        star.style.position = "absolute";
+        star.style.backgroundColor = Math.random() > 0.7 ? "#aaddff" : "white";
+        const size = Math.random() * 2 + 1;
+        star.style.width = size + "px";
+        star.style.height = size + "px";
+        star.style.borderRadius = "50%";
+        star.style.left = Math.random() * 130 - 15 + "px";
+        star.style.top = Math.random() * 130 - 15 + "px";
+        star.style.opacity = "0";
+        star.style.animation = `twinkle ${Math.random() * 2 + 1.5}s infinite`;
+        star.style.animationDelay = Math.random() * 3 + "s";
+        logoContainer.appendChild(star);
+      }
+    </script>
+  </body>
+</html>
