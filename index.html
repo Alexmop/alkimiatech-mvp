@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlkimiaTech | AI-Powered Seizure Prediction</title>
+    <meta
+      name="description"
+      content="AlkimiaTech develops AI-powered software for real-time seizure risk prediction using wearables. European neurotech startup."
+    />
+    <meta
+      name="keywords"
+      content="AI, epilepsy, seizure prediction, neurotechnology, wearable, healthtech, Flutter, FastAPI"
+    />
+    <meta name="author" content="AlkimiaTech" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+      /* ==================== RESET & BASE ==================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #0b0a1a;
+        color: #ffffff;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* ==================== HEADER / NAV ==================== */
+      header {
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        font-size: 28px;
+        background: #2a1040;
+        padding: 8px 14px;
+        border-radius: 50%;
+        color: #e09e3a;
+      }
+
+      .logo-text h1 {
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #ffcc88, #ffaa55);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .logo-text p {
+        font-size: 0.7rem;
+        color: #bbaaee;
+        letter-spacing: 0.5px;
+      }
+
+      nav a {
+        color: #ccc;
+        text-decoration: none;
+        margin-left: 25px;
+        font-size: 0.95rem;
+        transition: color 0.3s;
+      }
+
+      nav a:hover {
+        color: #ffaa55;
+      }
+
+      .btn-outline {
+        border: 1px solid #ffaa55;
+        padding: 6px 18px;
+        border-radius: 30px;
+        color: #ffaa55;
+      }
+
+      .btn-outline:hover {
+        background: #ffaa55;
+        color: #0b0a1a;
+      }
+
+      /* ==================== SECTIONS ==================== */
+      section {
+        padding: 70px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      h2 {
+        font-size: 2.2rem;
+        margin-bottom: 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #ffcc88, #ffaa55);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #aaa;
+        max-width: 700px;
+        margin: -10px auto 40px;
+      }
+
+      /* ==================== HERO ==================== */
+      .hero {
+        text-align: center;
+        padding: 80px 0 60px;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ffcc88, #ffaa55, #ff8866);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 15px;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        color: #ccc;
+        max-width: 700px;
+        margin: 0 auto 30px;
+      }
+
+      .hero-badge {
+        display: inline-block;
+        background: #2a1040;
+        padding: 6px 20px;
+        border-radius: 30px;
+        color: #e09e3a;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        border: 1px solid #e09e3a33;
+      }
+
+      .btn-primary {
+        display: inline-block;
+        padding: 12px 35px;
+        background: linear-gradient(135deg, #ff6b6b, #ff3b3b);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 40px;
+        font-weight: 600;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
+
+      .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px #ff3b3b66;
+      }
+
+      /* ==================== GRIDS ==================== */
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 30px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 40px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 30px 25px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(4px);
+        transition:
+          transform 0.3s,
+          border-color 0.3s;
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        border-color: #ffaa5544;
+      }
+
+      .card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+        color: #ffaa55;
+      }
+
+      .card p {
+        color: #ccc;
+        font-size: 0.95rem;
+      }
+
+      .card .icon {
+        font-size: 2.2rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      /* ==================== TEAM ==================== */
+      .team-member {
+        text-align: center;
+      }
+
+      .team-member img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ffaa55;
+        margin-bottom: 12px;
+      }
+
+      .team-member h4 {
+        font-size: 1.1rem;
+        color: #fff;
+      }
+
+      .team-member p {
+        color: #aaa;
+        font-size: 0.9rem;
+      }
+
+      /* ==================== FORM ==================== */
+      .contact-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 35px 40px;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .contact-form input,
+      .contact-form textarea {
+        width: 100%;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      .contact-form input:focus,
+      .contact-form textarea:focus {
+        border-color: #ffaa55;
+        outline: none;
+      }
+
+      .contact-form button {
+        background: linear-gradient(135deg, #ff6b6b, #ff3b3b);
+        color: #fff;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 40px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.3s;
+      }
+
+      .contact-form button:hover {
+        transform: scale(1.02);
+      }
+
+      /* ==================== FOOTER ==================== */
+      footer {
+        text-align: center;
+        padding: 30px 0 20px;
+        color: #666;
+        font-size: 0.8rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      footer a {
+        color: #888;
+        text-decoration: none;
+        margin: 0 10px;
+      }
+
+      footer a:hover {
+        color: #ffaa55;
+      }
+
+      /* ==================== RESPONSIVE ==================== */
+      @media (max-width: 768px) {
+        header {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        nav a {
+          margin: 0 10px;
+          font-size: 0.85rem;
+        }
+
+        .hero h1 {
+          font-size: 2.2rem;
+        }
+
+        .hero p {
+          font-size: 1rem;
+        }
+
+        .contact-form {
+          padding: 25px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================================ -->
+    <!-- HEADER -->
+    <!-- ============================================================ -->
+    <div class="container">
+      <header>
+        <div class="logo">
+          <span class="logo-icon">🧠</span>
+          <div class="logo-text">
+            <h1>ALKIMIATECH</h1>
+            <p>where science meets care</p>
+          </div>
+        </div>
+        <nav>
+          <a href="#home">Home</a>
+          <a href="#technology">Technology</a>
+          <a href="#team">Team</a>
+          <a href="#contact" class="btn-outline">Contact</a>
+        </nav>
+      </header>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- HOME / HERO -->
+    <!-- ============================================================ -->
+    <section id="home">
+      <div class="container hero">
+        <div class="hero-badge">🧠 AI-Powered Epilepsy Prediction</div>
+        <h1>Predicting the unpredictable.</h1>
+        <p>
+          AlkimiaTech develops AI-powered software that transforms wearable data
+          (heart rate, SpO₂, movement) into real-time seizure risk forecasting.
+        </p>
+        <a href="#contact" class="btn-primary">Partner with us</a>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TECHNOLOGY -->
+    <!-- ============================================================ -->
+    <section id="technology">
+      <div class="container">
+        <h2>Technology</h2>
+        <p class="subtitle">
+          We build predictive intelligence, not just another app.
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <span class="icon">🧠</span>
+            <h3>AI Algorithms</h3>
+            <p>
+              Proprietary machine learning models that analyze heart rate, SpO₂,
+              and movement to forecast seizure risk in real-time.
+            </p>
+          </div>
+          <div class="card">
+            <span class="icon">📱</span>
+            <h3>Mobile Platform</h3>
+            <p>
+              Cross-platform Flutter app that connects to wearables and provides
+              alerts, medical records, and data visualization.
+            </p>
+          </div>
+          <div class="card">
+            <span class="icon">🆘</span>
+            <h3>Autonomous Rescue</h3>
+            <p>
+              Low-power beacon mode for locating patients during emergencies,
+              even without cellular coverage or GPS signal.
+            </p>
+          </div>
+          <div class="card">
+            <span class="icon">⚡</span>
+            <h3>Real-Time Prediction</h3>
+            <p>
+              Continuous monitoring of physiological signals to detect pre-ictal
+              risk states minutes before a potential seizure.
+            </p>
+          </div>
+          <div class="card">
+            <span class="icon">🔒</span>
+            <h3>Secure by Design</h3>
+            <p>
+              Validated with Kali Linux penetration testing. Data is encrypted
+              and compliant with European privacy standards.
+            </p>
+          </div>
+          <div class="card">
+            <span class="icon">🌍</span>
+            <h3>Scalable Platform</h3>
+            <p>
+              Built to scale beyond epilepsy to Parkinson, Alzheimer,
+              cardiology, and diabetes monitoring.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TEAM -->
+    <!-- ============================================================ -->
+    <section id="team">
+      <div class="container">
+        <h2>Team</h2>
+        <p class="subtitle">Building the future of neurological monitoring.</p>
+        <div class="grid-2" style="max-width: 600px; margin: 0 auto">
+          <div class="card team-member">
+            <div style="font-size: 3.5rem; margin-bottom: 6px">🧑‍💻</div>
+            <h4>Alejandro Morales</h4>
+            <p>Founder &amp; CEO</p>
+            <p style="font-size: 0.8rem; color: #888; margin-top: 6px">
+              AI · Flutter · FastAPI
+            </p>
+          </div>
+          <div class="card team-member">
+            <div style="font-size: 3.5rem; margin-bottom: 6px">🧑‍⚕️</div>
+            <h4>Advisory Board</h4>
+            <p>Neuroscience · Neurology</p>
+            <p style="font-size: 0.8rem; color: #888; margin-top: 6px">
+              (In formation)
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CONTACT -->
+    <!-- ============================================================ -->
+    <section id="contact">
+      <div class="container">
+        <h2>Contact</h2>
+        <p class="subtitle">
+          Let’s talk about partnerships, pilots, or investment.
+        </p>
+        <div class="contact-form">
+          <form name="contact" method="POST" data-netlify="true">
+            <input type="text" name="name" placeholder="Full name" required />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email address"
+              required
+            />
+            <input
+              type="text"
+              name="company"
+              placeholder="Company (optional)"
+            />
+            <textarea
+              name="message"
+              rows="4"
+              placeholder="Tell us about your interest in AlkimiaTech..."
+              required
+            ></textarea>
+            <button type="submit">Send message</button>
+          </form>
+          <p
+            style="
+              text-align: center;
+              margin-top: 16px;
+              font-size: 0.85rem;
+              color: #888;
+            "
+          >
+            📧
+            <a
+              href="mailto:alkimiatech.dev@gmail.com"
+              style="color: #ffaa55; text-decoration: none"
+              >alkimiatech.dev@gmail.com</a
+            >
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- FOOTER -->
+    <!-- ============================================================ -->
+    <footer>
+      <div class="container">
+        <p>&copy; 2026 AlkimiaTech — Neurotechnology for a safer tomorrow.</p>
+        <p style="margin-top: 6px">
+          <a href="https://github.com/Alexmop/alkimiatech-mvp" target="_blank"
+            >GitHub</a
+          >
+          <a
+            href="https://linkedin.com/company/alkimiatech-startup"
+            target="_blank"
+            >LinkedIn</a
+          >
+          <a href="mailto:alkimiatech.dev@gmail.com">Email</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
