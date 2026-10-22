@@ -19,6 +19,7 @@
         color: #ffaa55;
         font-size: 1.2rem;
         z-index: 10;
+        pointer-events: none;
       }
       #info h1 {
         margin: 0;
@@ -39,13 +40,14 @@
         background: rgba(0, 0, 0, 0.5);
         padding: 8px 16px;
         border-radius: 20px;
+        pointer-events: none;
       }
       /* Panel clínico lateral */
       #clinical-panel {
         position: absolute;
         top: 20px;
         right: 20px;
-        width: 28%; /* Ocupa el 28% derecho */
+        width: 28%;
         height: 90%;
         background: rgba(20, 10, 30, 0.95);
         border: 1px solid #ffaa55;
@@ -69,6 +71,27 @@
         border-radius: 8px;
         border: 1px solid #444;
       }
+      /* Tooltip para las regiones del cerebro */
+      #tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ffaa55;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 20;
+        max-width: 250px;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+      #tooltip h3 {
+        margin: 0 0 4px 0;
+        color: #ffaa55;
+        font-size: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -78,17 +101,20 @@
     </div>
     <div id="status">○ Connecting to backend...</div>
 
+    <!-- Tooltip Flotante -->
+    <div id="tooltip">
+      <h3 id="tt-name">Region</h3>
+      <p id="tt-func" style="margin: 0">Function</p>
+    </div>
+
     <!-- Panel Clínico -->
     <div id="clinical-panel">
       <h2>Clinical EEG Monitoring (10-09-2025)</h2>
-
-      <!-- Visor de PDF -->
       <embed
         class="pdf-viewer"
         src="../../smartwatch_app/assets/eeg_scans/2025/EEG_2025-09-10.pdf"
         type="application/pdf"
       />
-
       <p
         style="
           font-size: 0.8rem;
@@ -100,6 +126,9 @@
         * Original clinical EEG data
       </p>
     </div>
+
+    <!-- Importar datos de regiones -->
+    <script src="brain_regions.js"></script>
 
     <script type="importmap">
       {
@@ -119,7 +148,6 @@
       scene.background = new THREE.Color(0x0b0a1a);
       scene.fog = new THREE.FogExp2(0x0b0a1a, 0.05);
 
-      // El cerebro estará centrado en el 70% izquierdo de la pantalla
       const camera = new THREE.PerspectiveCamera(
         45,
         (window.innerWidth * 0.7) / window.innerHeight,
@@ -129,7 +157,6 @@
       camera.position.set(0, 0.5, 4);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
-      // ARREGLO DEFINITIVO: El lienzo 3D solo ocupa el 70% del ancho
       renderer.setSize(window.innerWidth * 0.7, window.innerHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       document.body.appendChild(renderer.domElement);
@@ -221,6 +248,27 @@
       brainGroup.add(stem);
 
       scene.add(brainGroup);
+
+      // ==================== ANATOMICAL REGIONS (Nodos) ====================
+      const regionNodes = [];
+      if (window.brainRegions) {
+        window.brainRegions.forEach((region) => {
+          const regionGeo = new THREE.SphereGeometry(0.08, 16, 16);
+          const regionMat = new THREE.MeshPhongMaterial({
+            color: region.color,
+            emissive: region.color,
+            emissiveIntensity: 0.6,
+          });
+          const regionMesh = new THREE.Mesh(regionGeo, regionMat);
+          regionMesh.position.set(region.pos.x, region.pos.y, region.pos.z);
+
+          // Guardar datos para el hover
+          regionMesh.userData = { name: region.name, func: region.function };
+
+          brainGroup.add(regionMesh);
+          regionNodes.push(regionMesh);
+        });
+      }
 
       // ==================== NEURONS ====================
       const neuronCount = 800;
@@ -368,6 +416,35 @@
 
       setInterval(fetchNeuromapData, 2000);
       fetchNeuromapData();
+
+      // ==================== HOVER INTERACTIVITY (Tooltip) ====================
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      const tooltip = document.getElementById("tooltip");
+      const ttName = document.getElementById("tt-name");
+      const ttFunc = document.getElementById("tt-func");
+
+      window.addEventListener("mousemove", (event) => {
+        // Calcular posición del mouse en el canvas del cerebro (70% izquierdo)
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(regionNodes);
+
+        if (intersects.length > 0) {
+          const hit = intersects[0].object;
+          ttName.innerText = hit.userData.name;
+          ttFunc.innerText = hit.userData.func;
+
+          tooltip.style.opacity = 1;
+          tooltip.style.left = event.clientX + 15 + "px";
+          tooltip.style.top = event.clientY + 15 + "px";
+        } else {
+          tooltip.style.opacity = 0;
+        }
+      });
 
       // ==================== ANIMATION ====================
       let time = 0;
