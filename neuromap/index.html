@@ -8,7 +8,7 @@
       body {
         margin: 0;
         overflow: hidden;
-        background: #020105;
+        background: #02010a;
         font-family: "Segoe UI", sans-serif;
         color: white;
       }
@@ -31,7 +31,6 @@
         font-size: 0.9rem;
       }
 
-      /* Botones flotantes */
       #controls {
         position: absolute;
         top: 20px;
@@ -61,7 +60,6 @@
         box-shadow: 0 0 10px #ffaa55;
       }
 
-      /* Panel Clínico */
       #clinical-panel {
         position: absolute;
         top: 20px;
@@ -99,18 +97,12 @@
         color: #aaa;
         font-size: 1.5rem;
       }
-      .close-btn:hover {
-        color: #ff4444;
-      }
-
       .pdf-viewer {
         flex-grow: 1;
         width: 100%;
         border-radius: 8px;
         border: 1px solid #333;
       }
-
-      /* Botón para abrir el panel */
       #open-panel-btn {
         position: absolute;
         top: 20px;
@@ -126,11 +118,6 @@
         display: none;
         box-shadow: 0 0 15px #ffaa55;
       }
-      #open-panel-btn.visible {
-        display: block;
-      }
-
-      /* Controles EEG dentro del panel */
       .eeg-controls {
         display: flex;
         gap: 10px;
@@ -152,7 +139,6 @@
         box-shadow: 0 0 10px #ffaa55;
       }
 
-      /* Tooltip */
       #tooltip {
         position: absolute;
         background: rgba(10, 5, 20, 0.95);
@@ -178,8 +164,6 @@
       <h1>AlkimiaTech Neuromap</h1>
       <p>Live Synaptic Activity</p>
     </div>
-
-    <!-- Controles Globales -->
     <div id="controls">
       <button
         class="control-btn active"
@@ -192,24 +176,17 @@
         Centrar Cámara
       </button>
     </div>
-
     <div id="tooltip">
       <h3 id="tt-name">Region</h3>
       <p id="tt-func" style="margin: 0">Function</p>
     </div>
+    <button id="open-panel-btn" onclick="togglePanel()">Clinical Data</button>
 
-    <!-- Botón para abrir panel (oculto por defecto) -->
-    <button id="open-panel-btn" onclick="togglePanel()">
-      Clinical EEG Monitoring
-    </button>
-
-    <!-- Panel Clínico -->
     <div id="clinical-panel">
       <div class="panel-header">
-        <h2>Clinical EEG Monitoring</h2>
+        <h2>Clinical Data (EEG)</h2>
         <div class="close-btn" onclick="togglePanel()">×</div>
       </div>
-
       <div class="eeg-controls">
         <button
           class="eeg-btn active"
@@ -222,7 +199,6 @@
           Eyes Open
         </button>
       </div>
-
       <embed
         class="pdf-viewer"
         src="../../smartwatch_app/assets/eeg_scans/2025/EEG_2025-09-10.pdf"
@@ -231,7 +207,6 @@
     </div>
 
     <script src="brain_regions.js"></script>
-
     <script type="importmap">
       {
         "imports": {
@@ -258,31 +233,28 @@
           .getElementById("btn-open")
           .classList.toggle("active", state === "open");
       };
-
       window.togglePanel = function () {
         const panel = document.getElementById("clinical-panel");
         const btn = document.getElementById("open-panel-btn");
         panel.classList.toggle("hidden");
-        btn.classList.toggle("visible");
+        btn.style.display = panel.classList.contains("hidden")
+          ? "block"
+          : "none";
         setTimeout(onWindowResize, 400);
       };
-
       window.toggleAnimation = function () {
         isAnimating = !isAnimating;
-        const btn = document.getElementById("btn-pulse");
-        btn.innerText = isAnimating ? "Pulsos: ON" : "Pulsos: OFF";
-        btn.classList.toggle("active", isAnimating);
+        document.getElementById("btn-pulse").innerText = isAnimating
+          ? "Pulsos: ON"
+          : "Pulsos: OFF";
       };
-
       window.resetCamera = function () {
-        camera.position.set(0, 0, 6);
+        camera.position.set(0, 0, 5);
         controls.target.set(0, 0, 0);
       };
 
       // ==================== SCENE ====================
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x020105);
-      scene.fog = new THREE.FogExp2(0x020105, 0.02);
 
       const camera = new THREE.PerspectiveCamera(
         45,
@@ -290,9 +262,12 @@
         0.1,
         1000,
       );
-      camera.position.set(0, 0, 6);
+      camera.position.set(0, 0, 5);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       document.body.appendChild(renderer.domElement);
@@ -301,102 +276,203 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.5;
+      controls.autoRotateSpeed = 0.4;
+
+      // ==================== GALAXY BACKGROUND (Azul profundo) ====================
+      const bgCanvas = document.createElement("canvas");
+      bgCanvas.width = 1024;
+      bgCanvas.height = 1024;
+      const bgCtx = bgCanvas.getContext("2d");
+
+      const bgGradient = bgCtx.createRadialGradient(
+        512,
+        512,
+        50,
+        512,
+        512,
+        800,
+      );
+      bgGradient.addColorStop(0, "#1a3a8a"); // Azul vibrante
+      bgGradient.addColorStop(0.4, "#0a1555"); // Azul profundo
+      bgGradient.addColorStop(1, "#010005"); // Negro espacial
+      bgCtx.fillStyle = bgGradient;
+      bgCtx.fillRect(0, 0, 1024, 1024);
+
+      const bgTexture = new THREE.CanvasTexture(bgCanvas);
+      scene.background = bgTexture;
+
+      // ==================== STARFIELD (Con Rotación) ====================
+      const starGeometry = new THREE.BufferGeometry();
+      const starCount = 3500;
+      const starPositions = new Float32Array(starCount * 3);
+      const starColors = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount * 3; i += 3) {
+        starPositions[i] = (Math.random() - 0.5) * 60;
+        starPositions[i + 1] = (Math.random() - 0.5) * 60;
+        starPositions[i + 2] = (Math.random() - 0.5) * 60;
+        const c = Math.random();
+        if (c > 0.8) {
+          starColors[i] = 1;
+          starColors[i + 1] = 0.7;
+          starColors[i + 2] = 0.9;
+        } else if (c > 0.5) {
+          starColors[i] = 0.7;
+          starColors[i + 1] = 0.9;
+          starColors[i + 2] = 1;
+        } else {
+          starColors[i] = 1;
+          starColors[i + 1] = 1;
+          starColors[i + 2] = 1;
+        }
+      }
+      starGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(starPositions, 3),
+      );
+      starGeometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(starColors, 3),
+      );
+      const starMaterial = new THREE.PointsMaterial({
+        size: 0.1,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+      });
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+
+      // ==================== COMET (Pasa cada 60 seg) ====================
+      const cometGeo = new THREE.BufferGeometry();
+      const cometPos = new Float32Array(50 * 3); // Estela
+      cometGeo.setAttribute("position", new THREE.BufferAttribute(cometPos, 3));
+      const cometMat = new THREE.LineBasicMaterial({
+        color: 0x88bbff,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+      });
+      const comet = new THREE.Line(cometGeo, cometMat);
+      scene.add(comet);
+      let cometTime = 0;
+      let cometActive = false;
 
       // ==================== LIGHTS ====================
-      const ambientLight = new THREE.AmbientLight(0x202040);
-      scene.add(ambientLight);
-      const pointLight = new THREE.PointLight(0xffaa55, 1.5, 20);
+      scene.add(new THREE.AmbientLight(0x404060));
+      const pointLight = new THREE.PointLight(0xffaa55, 2, 20);
       pointLight.position.set(3, 3, 3);
       scene.add(pointLight);
+      const pointLight2 = new THREE.PointLight(0x4466ff, 2, 20);
+      pointLight2.position.set(-3, -2, 3);
+      scene.add(pointLight2);
 
-      // ==================== BRAIN MESH (Base Suave) ====================
+      // ==================== PROCEDURAL BRAIN ====================
       const brainGroup = new THREE.Group();
 
-      // Material oscuro para el cerebro de fondo
       const brainMaterial = new THREE.MeshPhongMaterial({
-        color: 0x0a0515,
-        emissive: 0x050210,
-        shininess: 30,
+        color: 0x5a3a8a,
+        emissive: 0x2a1040,
+        shininess: 90,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.25,
+        side: THREE.DoubleSide,
       });
 
-      // Función para crear hemisferios suaves (como el anterior)
+      function applyBrainFolds(vertex) {
+        const freq = 5;
+        const noise =
+          Math.sin(vertex.x * freq) *
+          Math.cos(vertex.y * freq) *
+          Math.sin(vertex.z * freq);
+        const displacement = noise * 0.04;
+        vertex.x += vertex.x * displacement;
+        vertex.y += vertex.y * displacement;
+        vertex.z += vertex.z * displacement;
+        return vertex;
+      }
+
       function createHemisphere(sign) {
-        const geometry = new THREE.SphereGeometry(1.5, 64, 64);
+        const geometry = new THREE.SphereGeometry(1.5, 128, 128);
         const positions = geometry.attributes.position;
         const vertex = new THREE.Vector3();
-
         for (let i = 0; i < positions.count; i++) {
           vertex.fromBufferAttribute(positions, i);
-          // Aplanar la base
-          if (vertex.y < -0.5) {
-            vertex.y = -0.5 + (vertex.y + 0.5) * 0.3;
-          }
-          // Surcos suaves
-          const noise =
-            Math.sin(vertex.x * 8) *
-            Math.cos(vertex.y * 8) *
-            Math.sin(vertex.z * 8);
-          const displacement = noise * 0.06; // Menos ruido para que sea suave
-          vertex.x += vertex.x * displacement;
-          vertex.y += vertex.y * displacement;
-          vertex.z += vertex.z * displacement;
+          if (vertex.y < -0.3) vertex.y = -0.3 + (vertex.y + 0.3) * 0.4;
+          vertex.copy(applyBrainFolds(vertex));
           positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
         }
         geometry.computeVertexNormals();
         const hemisphere = new THREE.Mesh(geometry, brainMaterial);
-        hemisphere.scale.set(1, 0.85, 1.1);
-        hemisphere.position.x = sign * 0.15;
-        hemisphere.position.y = 0.1;
+        hemisphere.scale.set(1, 0.9, 1.2);
+        hemisphere.position.x = sign * 0.25;
         return hemisphere;
       }
-
       brainGroup.add(createHemisphere(-1));
       brainGroup.add(createHemisphere(1));
 
-      // Cerebelo (Parte de abajo visible)
-      const cerebellumGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-      const cerebellum = new THREE.Mesh(cerebellumGeometry, brainMaterial);
-      cerebellum.scale.set(1.5, 0.6, 0.8);
-      cerebellum.position.set(0, -0.8, -0.3);
+      const cbGeo = new THREE.SphereGeometry(0.7, 64, 64);
+      const cbPositions = cbGeo.attributes.position;
+      const cbVertex = new THREE.Vector3();
+      for (let i = 0; i < cbPositions.count; i++) {
+        cbVertex.fromBufferAttribute(cbPositions, i);
+        const fold = Math.sin(cbVertex.y * 30) * 0.02;
+        cbVertex.x += cbVertex.x * fold;
+        cbVertex.z += cbVertex.z * fold;
+        cbPositions.setXYZ(i, cbVertex.x, cbVertex.y, cbVertex.z);
+      }
+      cbGeo.computeVertexNormals();
+      const cerebellum = new THREE.Mesh(cbGeo, brainMaterial);
+      cerebellum.scale.set(1.6, 0.5, 0.9);
+      cerebellum.position.set(0, -0.75, -0.7);
       brainGroup.add(cerebellum);
 
-      // Tallo cerebral (Tronco encefálico)
-      const stemGeometry = new THREE.CylinderGeometry(0.15, 0.25, 0.8, 16);
-      const stem = new THREE.Mesh(stemGeometry, brainMaterial);
-      stem.position.set(0, -1.2, 0.2);
-      stem.rotation.x = 0.3;
+      const stemGeo = new THREE.CylinderGeometry(0.15, 0.25, 1.0, 32, 10);
+      const stemPositions = stemGeo.attributes.position;
+      const stemVertex = new THREE.Vector3();
+      for (let i = 0; i < stemPositions.count; i++) {
+        stemVertex.fromBufferAttribute(stemPositions, i);
+        if (stemVertex.y < 0)
+          stemVertex.z -= Math.pow(Math.abs(stemVertex.y), 2) * 0.5;
+        stemPositions.setXYZ(i, stemVertex.x, stemVertex.y, stemVertex.z);
+      }
+      stemGeo.computeVertexNormals();
+      const stem = new THREE.Mesh(stemGeo, brainMaterial);
+      stem.position.set(0, -1.15, -0.1);
+      stem.rotation.x = 0.1;
       brainGroup.add(stem);
 
       scene.add(brainGroup);
 
-      // ==================== NEURONS (Miles de puntos) ====================
-      const neuronCount = 4000;
+      // ==================== NEURONS & CONNECTIONS (Internas) ====================
+      const neuronCount = 9000;
       const neuronPositions = [];
       const neuronColors = [];
 
       for (let i = 0; i < neuronCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
+        // Generar puntos en un volumen esférico (dentro del cerebro)
+        const u = Math.random();
+        const v = Math.random();
+        const theta = 2 * Math.PI * u;
+        const phi = Math.acos(2 * v - 1);
+        const r = Math.cbrt(Math.random()) * 1.4; // Distribución volumétrica
 
-        // Radio ajustado a la superficie del cerebro suave
-        const r = 1.45 + Math.random() * 0.1;
+        let x = r * Math.sin(phi) * Math.cos(theta);
+        let y = r * Math.sin(phi) * Math.sin(theta) * 0.9;
+        let z = r * Math.cos(phi) * 1.2;
 
-        const x = r * Math.sin(phi) * Math.cos(theta);
-        const y = r * Math.sin(phi) * Math.sin(theta) * 0.85 + 0.1;
-        const z = r * Math.cos(phi) * 1.1;
-
-        if (y > -0.6) {
-          neuronPositions.push(x, y, z);
-          // Colores base: Azul cian y púrpura
-          if (Math.random() > 0.85) {
-            neuronColors.push(0.0, 1.0, 1.0); // Cyan
-          } else {
-            neuronColors.push(0.6, 0.2, 1.0); // Purple
-          }
+        // Ajustar base para cerebelo y tronco
+        if (y < -0.5 && Math.random() > 0.5) {
+          x = (Math.random() - 0.5) * 1.2;
+          y = -0.7 - Math.random() * 0.6;
+          z = -0.4 - Math.random() * 0.4;
         }
+
+        neuronPositions.push(x, y, z);
+        const colorType = Math.random();
+        if (colorType > 0.8) neuronColors.push(1.0, 0.4, 0.8);
+        else if (colorType > 0.5) neuronColors.push(0.0, 1.0, 1.0);
+        else neuronColors.push(1.0, 1.0, 1.0);
       }
 
       const neuronGeometry = new THREE.BufferGeometry();
@@ -409,37 +485,32 @@
         new THREE.Float32BufferAttribute(neuronColors, 3),
       );
 
-      // Textura circular para el brillo
-      const canvas = document.createElement("canvas");
-      canvas.width = 32;
-      canvas.height = 32;
-      const context = canvas.getContext("2d");
-      const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, "rgba(255,255,255,1)");
-      gradient.addColorStop(0.2, "rgba(255,255,255,0.8)");
-      gradient.addColorStop(1, "rgba(0,0,0,0)");
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, 32, 32);
-      const neuronTexture = new THREE.CanvasTexture(canvas);
+      const ptCanvas = document.createElement("canvas");
+      ptCanvas.width = 32;
+      ptCanvas.height = 32;
+      const ptCtx = ptCanvas.getContext("2d");
+      const ptGrad = ptCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      ptGrad.addColorStop(0, "rgba(255,255,255,1)");
+      ptGrad.addColorStop(0.2, "rgba(255,255,255,0.8)");
+      ptGrad.addColorStop(1, "rgba(0,0,0,0)");
+      ptCtx.fillStyle = ptGrad;
+      ptCtx.fillRect(0, 0, 32, 32);
+      const pointTexture = new THREE.CanvasTexture(ptCanvas);
 
       const neuronMaterial = new THREE.PointsMaterial({
-        size: 0.05,
-        map: neuronTexture,
+        size: 0.06,
+        map: pointTexture,
         vertexColors: true,
         transparent: true,
         opacity: 0.9,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
-
       const neurons = new THREE.Points(neuronGeometry, neuronMaterial);
       brainGroup.add(neurons);
 
-      // ==================== SYNAPSES (Conexiones) ====================
       const connectionPositions = [];
-      const connectionCount = 2500;
-
-      for (let i = 0; i < connectionCount; i++) {
+      for (let i = 0; i < 5000; i++) {
         const idx1 =
           Math.floor(Math.random() * (neuronPositions.length / 3)) * 3;
         const idx2 =
@@ -450,24 +521,18 @@
         const x2 = neuronPositions[idx2],
           y2 = neuronPositions[idx2 + 1],
           z2 = neuronPositions[idx2 + 2];
-
         const dist = Math.sqrt(
           Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2) + Math.pow(z2 - z1, 2),
         );
-        if (dist < 0.35) {
-          // Conectar solo las cercanas
-          connectionPositions.push(x1, y1, z1, x2, y2, z2);
-        }
+        if (dist < 0.35) connectionPositions.push(x1, y1, z1, x2, y2, z2);
       }
-
       const connectionGeometry = new THREE.BufferGeometry();
       connectionGeometry.setAttribute(
         "position",
         new THREE.Float32BufferAttribute(connectionPositions, 3),
       );
-
       const connectionMaterial = new THREE.LineBasicMaterial({
-        color: 0x3366ff,
+        color: 0x88bbff,
         transparent: true,
         opacity: 0.15,
         blending: THREE.AdditiveBlending,
@@ -478,12 +543,21 @@
       );
       brainGroup.add(connections);
 
-      // ==================== PULSOS DE LUZ ====================
-      const pulseCount = 120;
+      // ==================== PULSOS DE LUZ (Internos) ====================
+      const pulseCount = 800;
       const pulseGeometry = new THREE.BufferGeometry();
       const pulsePositions = new Float32Array(pulseCount * 3);
+      const pulseColors = new Float32Array(pulseCount * 3);
 
       const pulsesData = [];
+      const colorsPalette = [
+        new THREE.Color(0xff66aa),
+        new THREE.Color(0x66ffaa),
+        new THREE.Color(0x4466ff),
+        new THREE.Color(0xffdd44),
+        new THREE.Color(0xff8833),
+      ];
+
       for (let i = 0; i < pulseCount; i++) {
         const lineIdx =
           Math.floor(Math.random() * (connectionPositions.length / 6)) * 6;
@@ -504,22 +578,60 @@
         pulsePositions[i * 3] = pulsesData[i].start.x;
         pulsePositions[i * 3 + 1] = pulsesData[i].start.y;
         pulsePositions[i * 3 + 2] = pulsesData[i].start.z;
+
+        const c =
+          colorsPalette[Math.floor(Math.random() * colorsPalette.length)];
+        pulseColors[i * 3] = c.r;
+        pulseColors[i * 3 + 1] = c.g;
+        pulseColors[i * 3 + 2] = c.b;
       }
 
       pulseGeometry.setAttribute(
         "position",
         new THREE.BufferAttribute(pulsePositions, 3),
       );
+      pulseGeometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(pulseColors, 3),
+      );
+
       const pulseMaterial = new THREE.PointsMaterial({
         size: 0.12,
-        color: 0x00ffff,
+        map: pointTexture,
+        vertexColors: true,
         transparent: true,
         opacity: 1,
         blending: THREE.AdditiveBlending,
-        map: neuronTexture,
       });
       const pulses = new THREE.Points(pulseGeometry, pulseMaterial);
       brainGroup.add(pulses);
+
+      // ==================== CHISPAS TITILANTES (Internas) ====================
+      const sparkleCount = 300;
+      const sparkleGeometry = new THREE.BufferGeometry();
+      const sparklePositions = new Float32Array(sparkleCount * 3);
+      for (let i = 0; i < sparkleCount; i++) {
+        const idx =
+          Math.floor(Math.random() * (neuronPositions.length / 3)) * 3;
+        sparklePositions[i * 3] = neuronPositions[idx];
+        sparklePositions[i * 3 + 1] = neuronPositions[idx + 1];
+        sparklePositions[i * 3 + 2] = neuronPositions[idx + 2];
+      }
+      sparkleGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(sparklePositions, 3),
+      );
+
+      const sparkleMaterial = new THREE.PointsMaterial({
+        size: 0.15,
+        color: 0xffffff,
+        map: pointTexture,
+        transparent: true,
+        opacity: 1,
+        blending: THREE.AdditiveBlending,
+      });
+      const sparkles = new THREE.Points(sparkleGeometry, sparkleMaterial);
+      brainGroup.add(sparkles);
 
       // ==================== ANATOMICAL REGIONS ====================
       const regionNodes = [];
@@ -532,7 +644,11 @@
             opacity: 0.9,
           });
           const regionMesh = new THREE.Mesh(regionGeo, regionMat);
-          regionMesh.position.set(region.pos.x, region.pos.y, region.pos.z);
+          regionMesh.position.set(
+            region.pos.x * 1.1,
+            region.pos.y * 1.0,
+            region.pos.z * 1.2,
+          );
           regionMesh.userData = { name: region.name, func: region.function };
           brainGroup.add(regionMesh);
           regionNodes.push(regionMesh);
@@ -552,6 +668,8 @@
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
         raycaster.setFromCamera(mouse, camera);
+        raycaster.params.Points.threshold = 0.1;
+
         const intersects = raycaster.intersectObjects(regionNodes);
 
         if (intersects.length > 0) {
@@ -566,15 +684,14 @@
         }
       });
 
-      // ==================== ANIMATION LOOP ====================
+      // ==================== ANIMATION ====================
       let time = 0;
-
       function animate() {
         requestAnimationFrame(animate);
         if (isAnimating) time += 0.02;
 
         if (isAnimating) {
-          // Animar pulsos
+          // Pulso internos
           const positions = pulseGeometry.attributes.position.array;
           for (let i = 0; i < pulseCount; i++) {
             const p = pulsesData[i];
@@ -603,28 +720,48 @@
           }
           pulseGeometry.attributes.position.needsUpdate = true;
 
-          // Respiración sutil
-          brainGroup.scale.setScalar(1 + Math.sin(time * 2) * 0.005);
+          // Titileo de chispas
+          sparkleMaterial.opacity = 0.3 + Math.sin(time * 15) * 0.7;
 
-          // Rotación
+          // Estrellas
+          stars.rotation.y += 0.0005;
+          stars.rotation.x += 0.0002;
+
+          // Cometa
+          cometTime += 0.02;
+          if (cometTime > 60) {
+            cometTime = 0;
+            cometActive = true;
+          }
+          if (cometActive) {
+            cometMat.opacity = Math.min(1, cometMat.opacity + 0.05);
+            const cometPositions = cometGeo.attributes.position.array;
+            for (let i = 0; i < 50; i++) {
+              cometPositions[i * 3] = -20 + cometTime * 0.5 - i * 0.2;
+              cometPositions[i * 3 + 1] = 10 - cometTime * 0.2 - i * 0.1;
+              cometPositions[i * 3 + 2] = -20;
+            }
+            cometGeo.attributes.position.needsUpdate = true;
+            if (cometTime > 2) {
+              cometActive = false;
+              cometMat.opacity = 0;
+            }
+          }
+
           brainGroup.rotation.y += 0.001;
         }
-
         controls.update();
         renderer.render(scene, camera);
       }
 
-      // ==================== RESIZE DINÁMICO ====================
       function onWindowResize() {
         const panel = document.getElementById("clinical-panel");
         const isHidden = panel.classList.contains("hidden");
         const width = isHidden ? window.innerWidth : window.innerWidth * 0.65;
-
         camera.aspect = width / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(width, window.innerHeight);
       }
-
       window.addEventListener("resize", onWindowResize);
       onWindowResize();
       animate();
