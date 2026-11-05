@@ -31,30 +31,33 @@
         font-size: 0.9rem;
       }
 
-      #controls {
+      /* Menú Selector (Digital Twin) */
+      #layer-menu {
         position: absolute;
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 15;
         display: flex;
-        gap: 15px;
-        background: rgba(0, 0, 0, 0.6);
+        gap: 10px;
+        background: rgba(5, 15, 25, 0.8);
         padding: 10px 20px;
         border-radius: 30px;
-        border: 1px solid #333;
+        border: 1px solid #00ffff;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
       }
-      .control-btn {
+      .layer-btn {
         background: transparent;
         color: #fff;
         border: 1px solid #00ffff;
-        padding: 5px 15px;
+        padding: 8px 16px;
         border-radius: 20px;
         cursor: pointer;
         transition: all 0.3s;
+        font-weight: bold;
       }
-      .control-btn:hover,
-      .control-btn.active {
+      .layer-btn:hover,
+      .layer-btn.active {
         background: #00ffff;
         color: #000;
         box-shadow: 0 0 10px #00ffff;
@@ -62,10 +65,10 @@
 
       #clinical-panel {
         position: absolute;
-        top: 20px;
+        top: 80px;
         right: -40%;
         width: 35%;
-        height: 90%;
+        height: 85%;
         background: transparent;
         border: 1px solid #00ffff;
         border-radius: 12px;
@@ -108,7 +111,7 @@
       }
       #open-panel-btn {
         position: absolute;
-        top: 20px;
+        top: 80px;
         right: 20px;
         z-index: 9;
         background: #00ffff;
@@ -167,20 +170,34 @@
   <body>
     <div id="info">
       <h1>AlkimiaTech Neuromap</h1>
-      <p>Live Synaptic Activity</p>
+      <p>Multimodal Digital Twin</p>
     </div>
-    <div id="controls">
+
+    <!-- Menú de Capas -->
+    <div id="layer-menu">
       <button
-        class="control-btn active"
-        id="btn-pulse"
-        onclick="toggleAnimation()"
+        class="layer-btn active"
+        id="btn-general"
+        onclick="setLayer('general')"
       >
-        Pulsos: ON
+        General
       </button>
-      <button class="control-btn" onclick="resetCamera()">
-        Centrar Cámara
+      <button
+        class="layer-btn"
+        id="btn-alzheimer"
+        onclick="setLayer('alzheimer')"
+      >
+        Alzheimer
+      </button>
+      <button
+        class="layer-btn"
+        id="btn-parkinson"
+        onclick="setLayer('parkinson')"
+      >
+        Parkinson
       </button>
     </div>
+
     <div id="tooltip">
       <h3 id="tt-name">Region</h3>
       <p id="tt-func" style="margin: 0">Function</p>
@@ -228,6 +245,7 @@
       // ==================== GLOBAL STATE ====================
       let eegState = "closed";
       let isAnimating = true;
+      let currentLayer = "general";
 
       window.setEEGState = function (state) {
         eegState = state;
@@ -245,9 +263,30 @@
       };
       window.toggleAnimation = function () {
         isAnimating = !isAnimating;
-        document.getElementById("btn-pulse").innerText = isAnimating
-          ? "Pulsos: ON"
-          : "Pulsos: OFF";
+      };
+      window.setLayer = function (layer) {
+        currentLayer = layer;
+        document
+          .querySelectorAll(".layer-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById("btn-" + layer).classList.add("active");
+
+        // Cambiar colores de las regiones según la capa
+        regionNodes.forEach((node) => {
+          if (layer === "alzheimer" && node.userData.id === "hippocampus") {
+            node.material.color.setHex(0xff0000); // Rojo para Alzheimer
+            node.scale.set(2, 2, 2); // Hacerlo más grande
+          } else if (
+            layer === "parkinson" &&
+            node.userData.id === "substantia_nigra"
+          ) {
+            node.material.color.setHex(0xffaa00); // Ámbar para Parkinson
+            node.scale.set(2, 2, 2);
+          } else {
+            node.material.color.setHex(node.userData.originalColor);
+            node.scale.set(1, 1, 1);
+          }
+        });
       };
       window.resetCamera = function () {
         camera.position.set(0, 0, 5);
@@ -313,66 +352,6 @@
       const stars = new THREE.Points(starGeometry, starMaterial);
       scene.add(stars);
 
-      // ==================== SATELLITE (Estilo Venesat-1) ====================
-      const satelliteGroup = new THREE.Group();
-
-      // Cuerpo cilíndrico principal
-      const satBodyGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.5, 16);
-      const satBodyMat = new THREE.MeshPhongMaterial({
-        color: 0xaaaaaa,
-        emissive: 0x222222,
-        shininess: 50,
-      });
-      const satBody = new THREE.Mesh(satBodyGeo, satBodyMat);
-      satBody.rotation.x = Math.PI / 2;
-      satelliteGroup.add(satBody);
-
-      // Paneles solares (cajas largas y delgadas)
-      const panelGeo = new THREE.BoxGeometry(0.6, 0.01, 0.25);
-      const panelMat = new THREE.MeshPhongMaterial({
-        color: 0x0044ff,
-        emissive: 0x001133,
-        shininess: 80,
-      });
-
-      const panelLeft = new THREE.Mesh(panelGeo, panelMat);
-      panelLeft.position.set(-0.45, 0, 0);
-      satelliteGroup.add(panelLeft);
-
-      const panelRight = new THREE.Mesh(panelGeo, panelMat);
-      panelRight.position.set(0.45, 0, 0);
-      satelliteGroup.add(panelRight);
-
-      // Antena parabólica (cono pequeño)
-      const antennaGeo = new THREE.ConeGeometry(0.1, 0.15, 16);
-      const antennaMat = new THREE.MeshPhongMaterial({
-        color: 0xdddddd,
-        emissive: 0x444444,
-      });
-      const antenna = new THREE.Mesh(antennaGeo, antennaMat);
-      antenna.position.set(0, 0.2, 0.25);
-      antenna.rotation.x = -Math.PI / 4;
-      satelliteGroup.add(antenna);
-
-      // Luces titilantes del satélite
-      const lightWhite = new THREE.PointLight(0xffffff, 0, 3);
-      lightWhite.position.set(0, 0.3, 0);
-      satelliteGroup.add(lightWhite);
-
-      const lightBlue = new THREE.PointLight(0x00ffff, 0, 3);
-      lightBlue.position.set(-0.5, 0, 0);
-      satelliteGroup.add(lightBlue);
-
-      const lightOrange = new THREE.PointLight(0xffaa55, 0, 3);
-      lightOrange.position.set(0.5, 0, 0);
-      satelliteGroup.add(lightOrange);
-
-      satelliteGroup.position.set(15, 5, -15);
-      satelliteGroup.scale.set(1.5, 1.5, 1.5);
-      scene.add(satelliteGroup);
-
-      let satTime = 0;
-
       // ==================== LIGHTS ====================
       scene.add(new THREE.AmbientLight(0x404060));
       const pointLight = new THREE.PointLight(0x00ffff, 2, 20);
@@ -382,11 +361,11 @@
       pointLight2.position.set(-3, -2, 3);
       scene.add(pointLight2);
 
-      // ==================== PROCEDURAL BRAIN (Lila) ====================
+      // ==================== PROCEDURAL ANATOMICAL BRAIN ====================
       const brainGroup = new THREE.Group();
 
       const brainMaterial = new THREE.MeshPhongMaterial({
-        color: 0xb388ff, // Lila claro
+        color: 0xb388ff,
         emissive: 0x4a2a8a,
         shininess: 120,
         transparent: true,
@@ -463,6 +442,84 @@
       brainGroup.add(stem);
 
       scene.add(brainGroup);
+
+      // ==================== ANATOMICAL REGIONS (Con Alzheimer y Parkinson) ====================
+      const regionNodes = [];
+      const regionsData = [
+        {
+          id: "frontal",
+          name: "Frontal Lobe",
+          func: "Executive functions, motor control",
+          color: 0xffaa55,
+          pos: { x: 0, y: 0.8, z: 1.0 },
+        },
+        {
+          id: "parietal",
+          name: "Parietal Lobe",
+          func: "Somatic sensations",
+          color: 0x44ff88,
+          pos: { x: 0, y: 1.2, z: 0 },
+        },
+        {
+          id: "temporal",
+          name: "Temporal Lobe",
+          func: "Auditory, memory",
+          color: 0x4466ff,
+          pos: { x: 1.2, y: 0, z: 0.2 },
+        },
+        {
+          id: "occipital",
+          name: "Occipital Lobe",
+          func: "Visual processing",
+          color: 0xff4466,
+          pos: { x: 0, y: 0.2, z: -1.2 },
+        },
+        {
+          id: "cerebellum_reg",
+          name: "Cerebellum",
+          func: "Motor coordination",
+          color: 0x88ff88,
+          pos: { x: 0, y: -1.0, z: -0.5 },
+        },
+        // Nuevas regiones patológicas
+        {
+          id: "hippocampus",
+          name: "Hippocampus",
+          func: "Memory (Alzheimer affected)",
+          color: 0xff00ff,
+          pos: { x: 0.5, y: -0.1, z: 0.2 },
+        },
+        {
+          id: "substantia_nigra",
+          name: "Substantia Nigra",
+          func: "Motor control (Parkinson affected)",
+          color: 0xffff00,
+          pos: { x: 0, y: -0.4, z: -0.1 },
+        },
+      ];
+
+      regionsData.forEach((region) => {
+        const regionGeo = new THREE.SphereGeometry(0.06, 16, 16);
+        const regionMat = new THREE.MeshBasicMaterial({
+          color: region.color,
+          transparent: true,
+          opacity: 0.8,
+        });
+        const regionMesh = new THREE.Mesh(regionGeo, regionMat);
+        regionMesh.position.set(
+          region.pos.x * 1.0,
+          region.pos.y * 0.9,
+          region.pos.z * 1.3,
+        );
+        regionMesh.userData = {
+          id: region.id,
+          name: region.name,
+          func: region.function || region.func,
+          originalColor: region.color,
+        };
+        brainGroup.add(regionMesh);
+        regionNodes.push(regionMesh);
+      });
 
       // ==================== NEURONS & CONNECTIONS ====================
       const neuronCount = 1200;
@@ -653,28 +710,6 @@
       const sparkles = new THREE.Points(sparkleGeometry, sparkleMaterial);
       brainGroup.add(sparkles);
 
-      // ==================== ANATOMICAL REGIONS ====================
-      const regionNodes = [];
-      if (window.brainRegions) {
-        window.brainRegions.forEach((region) => {
-          const regionGeo = new THREE.SphereGeometry(0.06, 16, 16);
-          const regionMat = new THREE.MeshBasicMaterial({
-            color: region.color,
-            transparent: true,
-            opacity: 0.8,
-          });
-          const regionMesh = new THREE.Mesh(regionGeo, regionMat);
-          regionMesh.position.set(
-            region.pos.x * 1.0,
-            region.pos.y * 0.9,
-            region.pos.z * 1.3,
-          );
-          regionMesh.userData = { name: region.name, func: region.function };
-          brainGroup.add(regionMesh);
-          regionNodes.push(regionMesh);
-        });
-      }
-
       // ==================== TOOLTIP HOVER ====================
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
@@ -740,26 +775,8 @@
           pulseGeometry.attributes.position.needsUpdate = true;
 
           sparkleMaterial.opacity = 0.5 + Math.sin(time * 3) * 0.5;
-
           stars.rotation.y += 0.0005;
           stars.rotation.x += 0.0002;
-
-          // Animación del Satélite
-          satTime += 0.001;
-          satelliteGroup.position.x = 15 - satTime * 10;
-          satelliteGroup.position.y = 5 - satTime * 2;
-          satelliteGroup.rotation.y += 0.002;
-          satelliteGroup.rotation.z = Math.sin(satTime * 5) * 0.1;
-
-          // Titileo de luces (Blanco, Azul, Naranja)
-          lightWhite.intensity = Math.max(0, Math.sin(time * 8)) * 2;
-          lightBlue.intensity = Math.max(0, Math.sin(time * 5 + 1)) * 2;
-          lightOrange.intensity = Math.max(0, Math.sin(time * 6 + 2)) * 2;
-
-          if (satelliteGroup.position.x < -15) {
-            satTime = 0;
-          }
-
           brainGroup.rotation.y += 0.001;
         }
         controls.update();
